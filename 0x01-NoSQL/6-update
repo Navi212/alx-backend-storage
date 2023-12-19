@@ -11,5 +11,8 @@ db.school.updateMany(
         {
             "address": "972 Mission street"
         }
+    },
+    {
+        multi: true
     }
     )
