@@ -15,9 +15,9 @@ class Cache:
         init: Object constructor method
         """
         self._redis = redis.Redis()
-        self._redis.flushdb
+        self._redis.flushdb()
 
-    def store(data: Union[str, bytes, int, float]) -> str:
+    def store(self, data: Union[str, bytes, int, float]) -> str:
         """
         store: Function that takes data arg and returns a str
 
