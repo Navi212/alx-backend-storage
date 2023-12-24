@@ -73,3 +73,4 @@ class Cache:
         value = self._redis.get(key)
         if value:
             return int(value.decode("utf-8"))
+        return 0
