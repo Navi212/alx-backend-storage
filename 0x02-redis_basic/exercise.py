@@ -58,7 +58,7 @@ class Cache:
         if value:
             return value.decode("utf-8")
         else:
-            return None
+            return value
 
     def get_int(self, key: str) -> int:
         """
