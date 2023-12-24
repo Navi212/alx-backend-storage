@@ -41,7 +41,7 @@ class Cache:
         """
         value = self._redis.get(key)
         if fn:
-            value = fn(value)
+            return fn(value)
         return value
 
     def get_str(self, key: str) -> str:
@@ -55,10 +55,7 @@ class Cache:
         Return:  str | None
         """
         value = sef._redis.get(key)
-        if value:
-            return value.decode("utf-8")
-        else:
-            return value
+        return value.decode("utf-8")
 
     def get_int(self, key: str) -> int:
         """
@@ -71,6 +68,7 @@ class Cache:
         Return:  int
         """
         value = self._redis.get(key)
-        if value:
+        try:
             return int(value.decode("utf-8"))
-        return 0
+        except Exception:
+            return 0
