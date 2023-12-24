@@ -44,7 +44,7 @@ class Cache:
             return fn(value)
         return value
 
-    def get_str(self, key: str) -> Union[str, None]:
+    def get_str(self, key: str) -> str:
         """
         get_str: Function taking arg `key` and converts
                  the value to str and returns it
