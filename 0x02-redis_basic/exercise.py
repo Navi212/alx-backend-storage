@@ -40,7 +40,7 @@ class Cache:
         Return: str | bytes | int | float
         """
         value = self._redis.get(key)
-        if (fn and value):
+        if fn:
             return fn(value)
         return value
 
