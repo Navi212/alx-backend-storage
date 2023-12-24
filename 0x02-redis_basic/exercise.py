@@ -40,8 +40,11 @@ class Cache:
         Return: str | bytes | int | float
         """
         value = self._redis.get(key)
+        # If a function is provided as a parameter
         if fn:
             return fn(value)
+        # If no function is provided, return raw data
+        # as per Redis default behaviour
         return value
 
     def get_str(self, key: str) -> str:
@@ -55,7 +58,9 @@ class Cache:
         Return:  str | None
         """
         value = sef._redis.get(key)
-        return value.decode("utf-8")
+        if value:
+            return value.decode("utf-8")
+        pass
 
     def get_int(self, key: str) -> int:
         """
@@ -68,7 +73,6 @@ class Cache:
         Return:  int
         """
         value = self._redis.get(key)
-        try:
+        if value:
             return int(value.decode("utf-8"))
-        except Exception:
-            return 0
+        return 0
