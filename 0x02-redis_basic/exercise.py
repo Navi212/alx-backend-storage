@@ -6,6 +6,36 @@ from functools import wraps
 from typing import Union, Optional, Callable
 
 
+def call_history(method: Callable) -> Callable:
+    """
+    call_history: Function that takes a function as
+                  argument and returns a function
+
+    Args:
+    function/callable
+
+    Return:
+    function/callable
+    """
+    method_name = method.__qualname__
+
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """
+        A wrapper function that wraps around
+        the orginal function `method` thereby
+        adding more functionality and preserving
+        the original functionality of `method`
+        """
+        inputs = str(args)
+        self._redis.rpush(method_name + ":inputs", inputs)
+        ret_val = method(self, *args, **kwargs)
+        outputs = str(ret_val)
+        self._redis.rpush(method_name + ":outputs", outputs)
+        return outputs
+    return wrapper
+
+
 def count_calls(method: Callable) -> Callable:
     """
     count_calls:    Function that takes a function as arg
@@ -38,6 +68,7 @@ class Cache:
 
     # Cause count_calls methodto watch over how many times store
     # method is called
+    @call_history
     @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
@@ -80,7 +111,7 @@ class Cache:
         args:
         key:     str
 
-        Return:  str | None
+        Return:  str
         """
         value = sef._redis.get(key)
         if value:
