@@ -1,8 +1,30 @@
 #!/usr/bin/env python3
 """ The `exercise` supplies a class `Cache` """
 import redis
-from typing import Union, Optional, Callable
 import uuid
+from functools import wraps
+from typing import Union, Optional, Callable
+
+
+def count_calls(method: Callable) -> Callable:
+    """
+    count_calls:    Function that takes a function as arg
+                    and returns a function.
+                    Counts number of times a function is called
+
+    args:
+    Callable:       A function
+
+    Return:
+    Callable:       A function
+    """
+    key = method.__qualname__
+
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        self._redis.incr(key)
+        return method(self, *args, **kwargs)
+    return wrapper
 
 
 class Cache:
@@ -14,6 +36,9 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()
 
+    # Cause count_calls methodto watch over how many times store
+    # method is called
+    @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
         store:  Function that takes `data` arg and returns a str
@@ -60,7 +85,6 @@ class Cache:
         value = sef._redis.get(key)
         if value:
             return value.decode("utf-8")
-        pass
 
     def get_int(self, key: str) -> int:
         """
