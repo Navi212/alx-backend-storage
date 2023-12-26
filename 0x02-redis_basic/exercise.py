@@ -6,6 +6,35 @@ from functools import wraps
 from typing import Union, Optional, Callable
 
 
+def replay(fn: Callable) -> None:
+    """
+    replay:    Function that takes a function/Callable as arg
+
+    Args:
+    fn:        function/Callable
+
+    Return:
+    None
+    """
+    r = redis.Redis()
+    # Assigns method name via __qualname__ to `method_name`
+    method_name = fn.__qualname__
+    # Assigns number the function fn was called to `called_times`
+    called_times = int(r.get(fn.__qualname__))
+    print(f"{method_name} was called {called_times} times:")
+    # Stores the inputs to `inputs` using the list key of
+    # {}:inputs".format(method_name)
+    inputs = r.lrange("{}:inputs".format(method_name), 0, -1)
+    # Stores the ouputs to `outputs` using the list key of
+    # {}:outputs".format(method_name)
+    outputs = r.lrange("{}:outputs".format(method_name), 0, -1)
+    # Zips inputs and outputs and prints out a fine print
+    for inp, outp in zip(inputs, outputs):
+        inp = inp.decode("utf-8")
+        outp = outp.decode("utf-8")
+        print(f"{method_name}(*{inp}) -> {outp}")
+
+
 def call_history(method: Callable) -> Callable:
     """
     call_history: Function that takes a function as
@@ -114,8 +143,7 @@ class Cache:
         Return:  str
         """
         value = sef._redis.get(key)
-        if value:
-            return value.decode("utf-8")
+        return value.decode("utf-8")
 
     def get_int(self, key: str) -> int:
         """
