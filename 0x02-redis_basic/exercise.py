@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-The `exercise` supplies a class `Cache`.
+The `exercise` module supplies a class `Cache`.
 
 Task 0:
 -------
