@@ -41,6 +41,9 @@ def count_visits(method: Callable) -> Callable:
         # If url was actually cached, the return the
         # decoded version to the client
         if cached_url:
+            print("\n=================")
+            print("Served from Cache")
+            print("=================\n")
             return cached_url.decode("utf-8")
         # Else not cached, then call the original function
         # here `get_page` implementing `get_page` logic
@@ -48,7 +51,7 @@ def count_visits(method: Callable) -> Callable:
         html_content = method(*args, **kwargs)
         # Then `Cache it` by setting the url as a `key` with
         # 10secs expiration time with a value of `html_content returned
-        r.setex(url, 10, html_content)
+        r.set(url, html_content, ex=10)
         # Then return the `str` based on the original's function
         # `get_page` code logic
         return html_content
