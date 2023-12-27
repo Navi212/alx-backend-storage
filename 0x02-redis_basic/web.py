@@ -3,7 +3,6 @@
 The `web.py` module supplies a decorator function `wrapper` and `get_page`
 function.
 """
-
 import redis
 import requests
 from functools import wraps
@@ -35,15 +34,25 @@ def count_visits(method: Callable) -> Callable:
         Return
         str
         """
-        url = args[0]
+        url = str(args[0])
         key = f"count:{url}"
         r.incr(key)
-        cached_html = r.get(url)
-        if cached_html:
-            return cached_html.decode("utf-8")
+        cached_url = r.get(url)
+        # If url was actually cached, the return the
+        # decoded version to the client
+        if cached_url:
+            return cached_url.decode("utf-8")
+        # Else not cached, then call the original function
+        # here `get_page` implementing `get_page` logic
+        # and the return a str into `html_content`
         html_content = method(*args, **kwargs)
+        # Then `Cache it` by setting the url as a `key` with
+        # 10secs expiration time with a value of `html_content returned
         r.setex(url, 10, html_content)
+        # Then return the `str` based on the original's function
+        # `get_page` code logic
         return html_content
+    # Finally return the `wrapper` making the decoration possible
     return wrapper
 
 
@@ -68,4 +77,4 @@ if __name__ == "__main__":
     test_url = "http://slowwly.robertomurray.co.uk"
     test_content = get_page(test_url)
     print(test_content)
-    print(f"Visits count for {test_url}:{r.get(f'count:{test_url}').decode()}")
+    print(f"Visits for {test_url}:-> {r.get(f'count:{test_url}').decode()}")
