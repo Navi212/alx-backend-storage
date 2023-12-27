@@ -1,54 +1,71 @@
 #!/usr/bin/env python3
-"""In this tasks, we will implement a get_page function
-(prototype: def get_page(url: str) -> str:). The core of
-the function is very simple. It uses the requests module
-to obtain the HTML content of a particular URL and returns it.
-
-Start in a new file named web.py and do not reuse the code
-written in exercise.py.
-
-Inside get_page track how many times a particular URL was
-accessed in the key "count:{url}" and cache the result with
-an expiration time of 10 seconds.
-
-Tip: Use http://slowwly.robertomurray.co.uk to simulate
-a slow response and test your caching."""
-
+"""
+The `web.py` module supplies a decorator function `wrapper` and `get_page`
+function.
+"""
 
 import redis
 import requests
 from functools import wraps
+from typing import Callable
 
-r = redis.Redis()
 
+def count_visits(method: Callable) -> Callable:
+    """
+    count_visits: Function that takes a function as an argument
+                  and returns a function
 
-def url_access_count(method):
-    """decorator for get_page function"""
+    Args:
+    method:       function/Callable
+
+    Return:
+    function/Callable
+    """
+    r = redis.Redis()
+
     @wraps(method)
-    def wrapper(url):
-        """wrapper function"""
-        key = "cached:" + url
-        cached_value = r.get(key)
-        if cached_value:
-            return cached_value.decode("utf-8")
+    def wrapper(*args, **kwargs) -> str:
+        """
+        wrapper:    represents the function/callable passed
+                    as argument to the `count_visits` function
 
-            # Get new content and update cache
-        key_count = "count:" + url
-        html_content = method(url)
+        Args:
+        url
 
-        r.incr(key_count)
-        r.set(key, html_content, ex=10)
-        r.expire(key, 10)
+        Return
+        str
+        """
+        url = args[0]
+        key = f"count:{url}"
+        r.incr(key)
+        cached_html = r.get(url)
+        if cached_html:
+            return cached_html.decode("utf-8")
+        html_content = method(*args, **kwargs)
+        r.setex(url, 10, html_content)
         return html_content
     return wrapper
 
 
-@url_access_count
+@count_visits
 def get_page(url: str) -> str:
-    """obtain the HTML content of a particular"""
-    results = requests.get(url)
-    return results.text
+    """
+    get_page:   Function that takes a `url` argument
+                and returns the html content of the url
+
+    Args:
+    url:        str
+
+    Return:
+    str
+    """
+    return requests.get(url).text
 
 
+# Test script here
 if __name__ == "__main__":
-    get_page('http://slowwly.robertomurray.co.uk')
+    r = redis.Redis()
+    test_url = "http://slowwly.robertomurray.co.uk"
+    test_content = get_page(test_url)
+    print(test_content)
+    print(f"Visits count for {test_url}:{r.get(f'count:{test_url}').decode()}")
