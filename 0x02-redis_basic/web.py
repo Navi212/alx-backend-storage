@@ -41,9 +41,9 @@ def count_visits(method: Callable) -> Callable:
         # If url was actually cached, the return the
         # decoded version to the client
         if cached_url:
-            print("\n=================")
-            print("Served from Cache")
-            print("=================\n")
+            # print("\n=================")
+            # print("Served from Cache")
+            # print("=================\n")
             return cached_url.decode("utf-8")
         # Else not cached, then call the original function
         # here `get_page` implementing `get_page` logic
@@ -75,9 +75,11 @@ def get_page(url: str) -> str:
 
 
 # Test script here
+"""
 if __name__ == "__main__":
     r = redis.Redis()
     test_url = "http://slowwly.robertomurray.co.uk"
     test_content = get_page(test_url)
     print(test_content)
     print(f"Visits for {test_url}:-> {r.get(f'count:{test_url}').decode()}")
+"""
